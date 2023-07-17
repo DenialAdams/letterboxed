@@ -33,7 +33,7 @@ worker.onmessage = function(e) {
    }
 };
 
-function solve() {
+window.solve = function solve() {
    let theWord = getValidWord();
    if (!theWord) {
       return;
