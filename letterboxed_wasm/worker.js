@@ -1,4 +1,4 @@
-importScripts("./pkg/letterboxed.js");
+importScripts("./pkg/letterboxed_wasm.js");
 const { setup, app_init, next_word } = wasm_bindgen;
 
 let app = wasm_bindgen('./pkg/letterboxed_bg.wasm');
