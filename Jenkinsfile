@@ -12,7 +12,7 @@ pipeline {
          steps {
             dir('letterboxed_wasm') {
                sh 'cargo build --release --target wasm32-unknown-unknown'
-               sh 'wasm-bindgen --target web ../target/wasm32-unknown-unknown/release/letterboxed_wasm.wasm --out-dir ./pkg'
+               sh 'wasm-bindgen --target no-modules ../target/wasm32-unknown-unknown/release/letterboxed_wasm.wasm --out-dir ./pkg'
             }
          }
       }
@@ -29,6 +29,7 @@ pipeline {
                }
                sh 'cp ../letterboxed_wasm/index.html .'
                sh 'cp ../letterboxed_wasm/index.js .'
+               sh 'cp ../letterboxed_wasm/worker.js .'
                sh 'cp ../letterboxed_wasm/stylesheet.css .'
                sshagent (credentials: ['jenkins-ssh-nfs']) {
                   sh 'rsync -avr -e "ssh -l flandoo_brickcodes -o StrictHostKeyChecking=no" --exclude ".git" --exclude "pkg@tmp" . ssh.phx.nearlyfreespeech.net:/home/public/letterboxed'
