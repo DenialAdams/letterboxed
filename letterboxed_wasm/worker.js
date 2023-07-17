@@ -12,7 +12,7 @@ onmessage = async function(e) {
    let board = e.data[0];
    wasm_bindgen.setup(board);
    while (true) {
-      let nw = next_word();
+      let nw = wasm_bindgen.next_word();
       if (nw) {
         postMessage(["new", nw]);
       } else {
