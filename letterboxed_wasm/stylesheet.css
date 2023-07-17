@@ -1,0 +1,50 @@
+main {
+    text-align: center;
+    font-size: 500%;
+    margin: 0 auto;
+}
+
+input {
+    font-size: 50%;
+    border: 5px  solid;
+    font-family: "Monaco", monospace;
+}
+
+label {
+    font-size: 50%;
+}
+
+table {
+    margin: 0 auto;
+    font-family: "Monaco", monospace;
+    color: white;
+}
+
+td {
+    width: 1em;
+    height: 1em;
+    border-left: 5px white solid;
+    border-top: 5px white solid;
+}
+
+td.gray {
+    background-color: #86888a;
+}
+
+td.green {
+    background-color: #6aaa64;
+}
+
+td.yellow {
+    background-color: #c9b458;
+}
+
+#resultlist {
+    color: gray;
+}
+
+#resultlist::first-line {
+    font-weight: bold;
+    color: black;
+}
+

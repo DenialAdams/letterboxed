@@ -1,0 +1,9 @@
+[package]
+name = "letterboxed_wasm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+letterboxed_lib = { path = "../letterboxed_lib" }
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1"

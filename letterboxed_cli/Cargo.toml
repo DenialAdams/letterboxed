@@ -1,0 +1,7 @@
+[package]
+name = "letterboxed_cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+letterboxed_lib = { path = "../letterboxed_lib" }

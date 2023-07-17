@@ -1,7 +1,13 @@
-[package]
-name = "letterboxed"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-[dependencies]
-qp-trie = "0.8"
+members = [
+   "letterboxed_cli",
+   "letterboxed_lib",
+   "letterboxed_wasm",
+]
+
+resolver = "2"
+
+[profile.release]
+lto = true
+codegen-units = 1
