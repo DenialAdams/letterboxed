@@ -9,8 +9,7 @@ app.then(_obj => {
 });
 
 onmessage = async function(e) {
-   let board = e.data[0];
-   wasm_bindgen.setup(board);
+   wasm_bindgen.setup(e.data);
    while (true) {
       let nw = wasm_bindgen.next_word();
       if (nw) {
