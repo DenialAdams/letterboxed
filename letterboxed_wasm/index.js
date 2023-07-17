@@ -1,4 +1,4 @@
-import { setup, next_word, default as init } from './pkg/letterboxed_wasm.js';
+import { setup, app_init, next_word, default as init } from './pkg/letterboxed_wasm.js';
 
 function isAlpha(str) {
    return /^[a-z]+$/.test(str);
@@ -28,6 +28,7 @@ function solve() {
    if (!theWord) {
       return;
    }
+   setup(theWord);
    document.getElementById("solveButton").disabled = false;
    let rl = document.getElementById("resultlist");
    while (true) {
