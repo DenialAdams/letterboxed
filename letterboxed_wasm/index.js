@@ -38,6 +38,7 @@ window.solve = function solve() {
    if (!theWord) {
       return;
    }
+   document.getElementById("resultlist").innerText = "";
    document.getElementById("solveButton").disabled = false;
    worker.postMessage(theWord);
 }
