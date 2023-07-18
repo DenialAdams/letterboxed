@@ -68,29 +68,21 @@ impl SolverState {
          }
       }
    
-      let mut s = SolverState {
+      SolverState {
          dict: filtered_dict,
          best_solution: None,
          board,
-         stack: Vec::new(),
-      };
-   
-      s.reset(board);
-   
-      s
-   }
-
-   pub fn reset(&mut self, board: GameGrid) {
-      self.stack.clear();
-      self.stack.push(SolutionState {
-         cur_sequence: String::new(),
-         words: vec![],
-         position: 0,
-         visited: 0xF000,
-         total_letters: 0,
-         last_char: '\0',
-      });
-      self.board = board;
+         stack: vec![
+            SolutionState {
+               cur_sequence: String::new(),
+               words: vec![],
+               position: 0,
+               visited: 0xF000,
+               total_letters: 0,
+               last_char: '\0',
+            }
+         ],
+      }
    }
 
    pub fn next_solution(&mut self) -> Option<String> {
