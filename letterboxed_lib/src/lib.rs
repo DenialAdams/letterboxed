@@ -26,9 +26,7 @@ pub struct SolverState {
 
 fn word_can_be_made(position: Option<usize>, mut remaining_word: Vec<char>, board: &GameGrid) -> bool {
    let next_letter = match remaining_word.pop() {
-      Some(nl) => {
-         nl
-      }
+      Some(nl) => nl,
       None => return true,
    };
 
@@ -56,7 +54,7 @@ impl SolverState {
             if line.len() < 3 {
                continue;
             }
-            dict.push(line.to_string() );
+            dict.push(line.to_string());
          }
          dict
       });
@@ -67,21 +65,19 @@ impl SolverState {
             filtered_dict.insert_str(entry, ());
          }
       }
-   
+
       SolverState {
          dict: filtered_dict,
          best_solution: None,
          board,
-         stack: vec![
-            SolutionState {
-               cur_sequence: String::new(),
-               words: vec![],
-               position: 0,
-               visited: 0xF000,
-               total_letters: 0,
-               last_char: '\0',
-            }
-         ],
+         stack: vec![SolutionState {
+            cur_sequence: String::new(),
+            words: vec![],
+            position: 0,
+            visited: 0xF000,
+            total_letters: 0,
+            last_char: '\0',
+         }],
       }
    }
 
