@@ -13,33 +13,63 @@ struct SolutionState {
    total_letters: usize,
 }
 
-static DICTIONARY: OnceLock<Trie<BString, ()>> = OnceLock::new();
+static DICTIONARY: OnceLock<Vec<String>> = OnceLock::new();
 
 type GameGrid = [char; 12];
 
 pub struct SolverState {
-   dict: &'static Trie<BString, ()>,
+   dict: Trie<BString, ()>,
    best_solution: Option<SolutionState>,
    board: GameGrid,
    stack: Vec<SolutionState>,
 }
 
+fn word_can_be_made(position: Option<usize>, mut remaining_word: Vec<char>, board: &GameGrid) -> bool {
+   let next_letter = match remaining_word.pop() {
+      Some(nl) => {
+         nl
+      }
+      None => return true,
+   };
+
+   let reachable_letters = if let Some(pos) = position {
+      reachable(pos)
+   } else {
+      &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+   };
+
+   for possible_dest in reachable_letters.iter() {
+      if board[*possible_dest] == next_letter && word_can_be_made(Some(*possible_dest), remaining_word.clone(), board) {
+         return true;
+      }
+   }
+
+   false
+}
+
 impl SolverState {
    pub fn setup(board: GameGrid) -> SolverState {
       let dict = DICTIONARY.get_or_init(|| {
-         let mut dict = Trie::new();
+         let mut dict = Vec::new();
          let f = include_str!("words_easy.txt");
          for line in f.lines() {
             if line.len() < 3 {
                continue;
             }
-            dict.insert_str(line, ());
+            dict.push(line.to_string() );
          }
          dict
       });
+
+      let mut filtered_dict = Trie::new();
+      for entry in dict.iter() {
+         if word_can_be_made(None, entry.chars().collect(), &board) {
+            filtered_dict.insert_str(entry, ());
+         }
+      }
    
       let mut s = SolverState {
-         dict,
+         dict: filtered_dict,
          best_solution: None,
          board,
          stack: Vec::new(),
