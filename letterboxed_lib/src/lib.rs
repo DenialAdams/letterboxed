@@ -47,17 +47,17 @@ fn word_can_be_made(position: Option<usize>, mut remaining_word: Vec<char>, boar
    false
 }
 
-fn word_path(position: Option<usize>, remaining_word: Vec<char>, board: &GameGrid, path: Vec<usize>) -> Option<Vec<usize>> {
-   if let Some(p) = position {
-      word_path_inner(position, remaining_word[1..].to_vec(), board, path)
+fn word_path(position: Option<usize>, remaining_word: Vec<char>, board: &GameGrid, visited: u16) -> Option<Vec<usize>> {
+   if position.is_some() {
+      word_path_inner(position, remaining_word[1..].to_vec(), board, vec![], visited).map(|x| x.0)
    } else {
-      word_path_inner(position, remaining_word, board, path)
+      word_path_inner(position, remaining_word, board, vec![], visited).map(|x| x.0)
    }
 }
 
-fn word_path_inner(position: Option<usize>, mut remaining_word: Vec<char>, board: &GameGrid, path: Vec<usize>) -> Option<Vec<usize>> {
+fn word_path_inner(position: Option<usize>, mut remaining_word: Vec<char>, board: &GameGrid, path: Vec<usize>, visited: u16) -> Option<(Vec<usize>, u16)> {
    let next_letter = if remaining_word.is_empty() {
-      return Some(path)
+      return Some((path, visited))
    } else {
       remaining_word.remove(0)
    };
@@ -75,14 +75,13 @@ fn word_path_inner(position: Option<usize>, mut remaining_word: Vec<char>, board
          next_path.reserve_exact(1);
          next_path.push(*possible_dest);
 
-         if let Some(final_path) = word_path_inner(Some(*possible_dest), remaining_word.clone(), board, next_path) {
-            possible_paths.push(final_path);
+         if let Some(res) = word_path_inner(Some(*possible_dest), remaining_word.clone(), board, next_path, visited | (1 << *possible_dest as u16)) {
+            possible_paths.push(res);
          }
       }
    }
 
-   // todo: choose path by max over visited
-   possible_paths.first().cloned()
+   possible_paths.iter().max_by_key(|x| x.1.count_ones()).cloned()
 }
 
 fn heuristic_solution(dict: &Trie<BString, ()>, board: &GameGrid) -> Option<SolutionState> {
@@ -106,7 +105,7 @@ fn heuristic_solution(dict: &Trie<BString, ()>, board: &GameGrid) -> Option<Solu
          true
       }).max_by_key(|x| {
          let mut trial_visited = visited;
-         let path = word_path(position, x.to_vec(), board, vec![]).unwrap_or(vec![]);
+         let path = word_path(position, x.to_vec(), board, trial_visited).unwrap_or(vec![]);
          for dest in path.iter().copied() {
             trial_visited |= 1 << dest as u16;
          }
@@ -114,7 +113,7 @@ fn heuristic_solution(dict: &Trie<BString, ()>, board: &GameGrid) -> Option<Solu
       });
 
       if let Some(w) = greedy_best_next {
-         if let Some(path) = word_path(position, w.to_vec(), board, vec![]) {
+         if let Some(path) = word_path(position, w.to_vec(), board, visited) {
             for dest in path.iter().copied() {
                visited |= 1 << dest as u16;
             }
@@ -125,7 +124,6 @@ fn heuristic_solution(dict: &Trie<BString, ()>, board: &GameGrid) -> Option<Solu
       }
 
       if visited_before == visited {
-         println!("xx {}", words.join(", "));
          // We did not make progress; bail
          return None;
       }
