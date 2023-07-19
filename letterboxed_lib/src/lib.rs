@@ -9,8 +9,6 @@ struct SolutionState {
    words: Vec<String>,
    position: usize,
    visited: u16,
-   last_char: char,
-   total_letters: usize,
 }
 
 static DICTIONARY: OnceLock<Vec<String>> = OnceLock::new();
@@ -25,6 +23,7 @@ pub struct SolverState {
    attempted_heuristic: bool,
 }
 
+// Not designed to return correct answers when making multiple words in succession!
 fn word_can_be_made(position: Option<usize>, mut remaining_word: Vec<char>, board: &GameGrid) -> bool {
    let next_letter = match remaining_word.pop() {
       Some(nl) => nl,
@@ -90,21 +89,32 @@ fn heuristic_solution(dict: &Trie<BString, ()>, board: &GameGrid) -> Option<Solu
          chars.len()
       });
 
-      if let Some(i) = flat_dict_again.iter().enumerate().rev().find(|x| word_can_be_made(position, x.1.clone(), board)).map(|x| x.0) {
-         let greedy_best_next_word = flat_dict_again.swap_remove(i);
-         words.push(greedy_best_next_word.iter().collect());
-         let path = word_path(position, greedy_best_next_word, board, vec![]).unwrap();
-         for dest in path.iter().copied() {
-            visited |= 1 << dest as u16;
+      let mut idx = None;
+      for (i, w) in flat_dict_again.iter().enumerate().rev() {
+         if let Some(last_char) = words.last().map(|x| x.chars().last().unwrap()) {
+            if w[0] != last_char {
+               continue;
+            }
          }
-         position = Some(*path.last().unwrap());
+         if let Some(path) = word_path(position, w.to_vec(), board, vec![]) {
+            for dest in path.iter().copied() {
+               visited |= 1 << dest as u16;
+            }
+            position = Some(*path.last().unwrap());
+            idx = Some(i);
+            break;
+         }
+      }
+
+      if let Some(i) = idx {
+         let greedy_best_next_word = flat_dict_again.swap_remove(i);
+         words.push(greedy_best_next_word.into_iter().collect());
       } else {
          return None;
       }
    }
 
-   let total_letters = words.iter().map(|x| x.chars().count()).sum();
-   Some(SolutionState { cur_sequence: String::new(), words, position: position.unwrap(), visited: 0xFFFF, last_char: '\0', total_letters })
+   Some(SolutionState { cur_sequence: String::new(), words, position: position.unwrap(), visited: 0xFFFF })
 }
 
 impl SolverState {
@@ -137,8 +147,6 @@ impl SolverState {
             words: vec![],
             position: 0,
             visited: 0xF000,
-            total_letters: 0,
-            last_char: '\0',
          }],
          attempted_heuristic: false,
       }
@@ -160,7 +168,9 @@ impl SolverState {
             match bs.words.len().cmp(&(solution.words.len() + 1)) {
                std::cmp::Ordering::Less => continue,
                std::cmp::Ordering::Equal => {
-                  if bs.total_letters <= solution.total_letters {
+                  let bstl = bs.words.iter().map(|x| x.chars().count()).sum::<usize>();
+                  let stl = solution.words.iter().map(|x| x.chars().count()).sum::<usize>() + solution.cur_sequence.chars().count();
+                  if bstl <= stl {
                      continue;
                   }
                }
@@ -174,17 +184,18 @@ impl SolverState {
 
          if self.dict.contains_key_str(&solution.cur_sequence) && !solution.words.contains(&solution.cur_sequence) {
             let mut new_solution = solution.clone();
+            let last_char = new_solution.cur_sequence.chars().last().unwrap();
             new_solution.words.push(std::mem::take(&mut new_solution.cur_sequence));
-            new_solution.cur_sequence.push(new_solution.last_char);
             if new_solution.visited == 0xFFFF {
                let solution_str = new_solution.words.join(", ");
                self.best_solution = Some(new_solution);
                return Some(solution_str);
             }
+            new_solution.cur_sequence.push(last_char);
             self.stack.push(new_solution);
          }
 
-         let reachable_letters = if solution.total_letters == 0 {
+         let reachable_letters = if solution.words.is_empty() && solution.cur_sequence.is_empty() {
             &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
          } else {
             reachable(solution.position)
@@ -195,9 +206,7 @@ impl SolverState {
             let mut new_solution = solution.clone();
             new_solution.visited |= 1 << *dest as u16;
             new_solution.cur_sequence.push(letter);
-            new_solution.total_letters += 1;
             new_solution.position = *dest;
-            new_solution.last_char = letter;
             self.stack.push(new_solution);
          }
       }
