@@ -25,6 +25,8 @@ pub struct SolverState {
 
 // Not designed to return correct answers when making multiple words in succession!
 fn word_can_be_made(position: Option<usize>, mut remaining_word: Vec<char>, board: &GameGrid) -> bool {
+   // we pop. if the word can be made backwards, it can be made forwards
+   // (again, this function is designed to check whether this word can be made on the board _at all_)
    let next_letter = match remaining_word.pop() {
       Some(nl) => nl,
       None => return true,
@@ -45,10 +47,19 @@ fn word_can_be_made(position: Option<usize>, mut remaining_word: Vec<char>, boar
    false
 }
 
-fn word_path(position: Option<usize>, mut remaining_word: Vec<char>, board: &GameGrid, path: Vec<usize>) -> Option<Vec<usize>> {
-   let next_letter = match remaining_word.pop() {
-      Some(nl) => nl,
-      None => return Some(path),
+fn word_path(position: Option<usize>, remaining_word: Vec<char>, board: &GameGrid, path: Vec<usize>) -> Option<Vec<usize>> {
+   if let Some(p) = position {
+      word_path_inner(position, remaining_word[1..].to_vec(), board, path)
+   } else {
+      word_path_inner(position, remaining_word, board, path)
+   }
+}
+
+fn word_path_inner(position: Option<usize>, mut remaining_word: Vec<char>, board: &GameGrid, path: Vec<usize>) -> Option<Vec<usize>> {
+   let next_letter = if remaining_word.is_empty() {
+      return Some(path)
+   } else {
+      remaining_word.remove(0)
    };
 
    let reachable_letters = if let Some(pos) = position {
@@ -57,20 +68,21 @@ fn word_path(position: Option<usize>, mut remaining_word: Vec<char>, board: &Gam
       &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
    };
 
+   let mut possible_paths = vec![];
    for possible_dest in reachable_letters.iter() {
       if board[*possible_dest] == next_letter {
          let mut next_path = path.clone();
          next_path.reserve_exact(1);
          next_path.push(*possible_dest);
 
-         let final_path = word_path(Some(*possible_dest), remaining_word.clone(), board, next_path);
-         if final_path.is_some() {
-            return final_path;
+         if let Some(final_path) = word_path_inner(Some(*possible_dest), remaining_word.clone(), board, next_path) {
+            possible_paths.push(final_path);
          }
       }
    }
 
-   None
+   // todo: choose path by max over visited
+   possible_paths.first().cloned()
 }
 
 fn heuristic_solution(dict: &Trie<BString, ()>, board: &GameGrid) -> Option<SolutionState> {
@@ -79,37 +91,42 @@ fn heuristic_solution(dict: &Trie<BString, ()>, board: &GameGrid) -> Option<Solu
 
    let mut position = None;
 
-   let mut flat_dict_again: Vec<Vec<char>> = dict.keys().map(|x| x.as_str().chars().collect()).collect();
+   let flat_dict_again: Vec<Vec<char>> = dict.keys().map(|x| x.as_str().chars().collect()).collect();
 
    while visited != 0xFFFF {
-      flat_dict_again.sort_by_key(|x| {
-         let mut chars: Vec<char> = x.clone();
-         chars.sort();
-         chars.dedup();
-         chars.len()
-      });
-
-      let mut idx = None;
-      for (i, w) in flat_dict_again.iter().enumerate().rev() {
-         if let Some(last_char) = words.last().map(|x| x.chars().last().unwrap()) {
-            if w[0] != last_char {
-               continue;
+      let visited_before = visited;
+   
+      let greedy_best_next = flat_dict_again.iter().filter(|x| {
+         if let Some(last_char) = words.last().map(|w| w.chars().last().unwrap()) {
+            if x[0] != last_char {
+               return false;
             }
          }
+
+         true
+      }).max_by_key(|x| {
+         let mut trial_visited = visited;
+         let path = word_path(position, x.to_vec(), board, vec![]).unwrap_or(vec![]);
+         for dest in path.iter().copied() {
+            trial_visited |= 1 << dest as u16;
+         }
+         (trial_visited.count_ones(), std::cmp::Reverse(x.len()))
+      });
+
+      if let Some(w) = greedy_best_next {
          if let Some(path) = word_path(position, w.to_vec(), board, vec![]) {
             for dest in path.iter().copied() {
                visited |= 1 << dest as u16;
             }
+   
+            words.push(w.iter().collect());
             position = Some(*path.last().unwrap());
-            idx = Some(i);
-            break;
          }
       }
 
-      if let Some(i) = idx {
-         let greedy_best_next_word = flat_dict_again.swap_remove(i);
-         words.push(greedy_best_next_word.into_iter().collect());
-      } else {
+      if visited_before == visited {
+         println!("xx {}", words.join(", "));
+         // We did not make progress; bail
          return None;
       }
    }
