@@ -32,7 +32,7 @@ pipeline {
                sh 'cp ../letterboxed_wasm/worker.js .'
                sh 'cp ../letterboxed_wasm/stylesheet.css .'
                sshagent (credentials: ['jenkins-ssh-nfs']) {
-                  sh 'rsync -avr -e "ssh -l flandoo_brickcodes -o StrictHostKeyChecking=no" --exclude ".git" --exclude "pkg@tmp" . ssh.phx.nearlyfreespeech.net:/home/public/letterboxed'
+                  sh 'rsync -avr -e "ssh -l flandoo_brickcodes -o StrictHostKeyChecking=no" --exclude ".git" --exclude "pkg@tmp" . ssh.nyc1.nearlyfreespeech.net:/home/public/letterboxed'
                }
             }
          }
