@@ -28,6 +28,9 @@ worker.onmessage = function(e) {
    } else if (e.data[0] == "new") {
       let rl = document.getElementById("resultlist");
       rl.innerText = e.data[1] + "\n" + rl.innerText;
+      let rlns = document.getElementById("resultlistNoSpoilers");
+      let wordCount = e.data[1].split(' ').length;
+      rlns.innerText = wordCount.toString() + " word solution" + "\n" + rlns.innerText;
    } else if (e.data[0] == "finished") {
       document.getElementById("solveButton").disabled = false;
    }
@@ -41,4 +44,9 @@ window.solve = function solve() {
    document.getElementById("resultlist").innerText = "";
    document.getElementById("solveButton").disabled = false;
    worker.postMessage(theWord);
+}
+
+window.toggleSpoilers = function toggleSpoilers(hideSpoilers) {
+   document.getElementById("resultlist").hidden = hideSpoilers;
+   document.getElementById("resultlistNoSpoilers").hidden = !hideSpoilers;
 }

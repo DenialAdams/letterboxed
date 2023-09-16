@@ -105,7 +105,7 @@ fn heuristic_solution(dict: &Trie<BString, ()>, board: &GameGrid) -> Option<Solu
          true
       }).max_by_key(|x| {
          let mut trial_visited = visited;
-         let path = word_path(position, x.to_vec(), board, trial_visited).unwrap_or(vec![]);
+         let path = word_path(position, x.to_vec(), board, trial_visited).unwrap_or_default();
          for dest in path.iter().copied() {
             trial_visited |= 1 << dest as u16;
          }
