@@ -33,6 +33,7 @@ worker.onmessage = function(e) {
       rlns.innerText = wordCount.toString() + " word solution";
    } else if (e.data[0] == "finished") {
       document.getElementById("solveButton").disabled = false;
+      document.getElementById("loadingThing").innerText = "🆗";
    }
 };
 
@@ -43,6 +44,7 @@ window.solve = function solve() {
    }
    document.getElementById("resultlist").innerText = "";
    document.getElementById("solveButton").disabled = false;
+   document.getElementById("loadingThing").innerText = "⌛";
    worker.postMessage(theWord);
 }
 
