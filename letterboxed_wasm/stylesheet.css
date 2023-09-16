@@ -41,7 +41,6 @@ td.yellow {
 
 #resultlist {
     color: gray;
-    white-space: pre-wrap;
 }
 
 #resultlist::first-line {
