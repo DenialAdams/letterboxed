@@ -10,7 +10,7 @@
       <main>
          <input type="text" id="word" minlength="12" maxlength="12"><br>
          <input type="button" value="Solve" onClick="solve()" id="solveButton" disabled>
-         <input type="checkbox" value="No Spoilers" onchange="spoilerCheckbox(this.checked)" id="noSpoiler">
+         <input type="checkbox" value="No Spoilers" onchange="toggleSpoilers(this.checked)" id="noSpoiler">
          <div id="resultlist"></div>
          <div id="resultlistNoSpoilers" hidden></div>
       </main>
