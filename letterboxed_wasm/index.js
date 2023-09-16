@@ -54,5 +54,5 @@ window.toggleSpoilers = function toggleSpoilers(hideSpoilers) {
 }
 
 window.addEventListener('DOMContentLoaded', (event) => {
-   document.getElementById('puzzle').value = decodeURIComponent(window.location.hash.substring(1));
+   document.getElementById('word').value = decodeURIComponent(window.location.hash.substring(1));
 });
