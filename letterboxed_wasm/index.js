@@ -43,6 +43,7 @@ window.solve = function solve() {
       return;
    }
    document.getElementById("resultlist").innerText = "";
+   document.getElementById("resultlistNoSpoilers").innerText = "";
    document.getElementById("solveButton").disabled = false;
    document.getElementById("loadingThing").innerText = "⌛";
    worker.postMessage(theWord);
