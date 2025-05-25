@@ -96,11 +96,10 @@ fn heuristic_solution(dict: &Trie<BString, ()>, board: &GameGrid) -> Option<Solu
       let visited_before = visited;
    
       let greedy_best_next = flat_dict_again.iter().filter(|x| {
-         if let Some(last_char) = words.last().map(|w| w.chars().last().unwrap()) {
-            if x[0] != last_char {
+         if let Some(last_char) = words.last().map(|w| w.chars().last().unwrap())
+            && x[0] != last_char {
                return false;
             }
-         }
 
          true
       }).max_by_key(|x| {
@@ -112,8 +111,8 @@ fn heuristic_solution(dict: &Trie<BString, ()>, board: &GameGrid) -> Option<Solu
          (trial_visited.count_ones(), std::cmp::Reverse(x.len()))
       });
 
-      if let Some(w) = greedy_best_next {
-         if let Some(path) = word_path(position, w.to_vec(), board, visited) {
+      if let Some(w) = greedy_best_next
+         && let Some(path) = word_path(position, w.to_vec(), board, visited) {
             for dest in path.iter().copied() {
                visited |= 1 << dest as u16;
             }
@@ -121,7 +120,6 @@ fn heuristic_solution(dict: &Trie<BString, ()>, board: &GameGrid) -> Option<Solu
             words.push(w.iter().collect());
             position = Some(*path.last().unwrap());
          }
-      }
 
       if visited_before == visited {
          // We did not make progress; bail

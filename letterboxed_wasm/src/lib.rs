@@ -1,7 +1,9 @@
+use std::sync::Mutex;
+
 use letterboxed_lib::SolverState;
 use wasm_bindgen::prelude::*;
 
-static mut STATE: Option<SolverState> = None;
+static STATE: Mutex<Option<SolverState>> = Mutex::new(None);
 
 #[wasm_bindgen]
 pub fn app_init() {
@@ -17,9 +19,7 @@ pub fn setup(board_str: String) -> bool {
       .collect();
 
    if let Ok(arr) = chars.try_into() {
-      unsafe {
-         STATE = Some(SolverState::setup(arr));
-      }
+      *STATE.lock().unwrap() = Some(SolverState::setup(arr));
       return true;
    }
 
@@ -28,7 +28,8 @@ pub fn setup(board_str: String) -> bool {
 
 #[wasm_bindgen]
 pub fn next_word() -> Option<String> {
-   let s = unsafe { STATE.as_mut().unwrap() };
+   let mut state_lock = STATE.lock().unwrap();
+   let s = state_lock.as_mut().unwrap();
 
    s.next_solution()
 }

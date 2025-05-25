@@ -1,3 +1,4 @@
+#![allow(clippy::uninlined_format_args)] // I'm an old man and I like the way it was before
 use letterboxed_lib::SolverState;
 
 fn main() {
